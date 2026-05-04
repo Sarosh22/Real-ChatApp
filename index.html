@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Advanced Chat App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    #users {
+      width: 25%;
+      background: #020617;
+      padding: 20px;
+      border-right: 1px solid #334155;
+    }
+
+    #users h3 {
+      margin-top: 0;
+    }
+
+    #userList {
+      list-style: none;
+      padding: 0;
+    }
+
+    #userList li {
+      padding: 8px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    /* Chat Area */
+    #chat {
+      width: 75%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h2 {
+      margin: 0;
+      padding: 15px;
+      background: #020617;
+      border-bottom: 1px solid #334155;
+    }
+
+    #messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      max-width: 60%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 12px;
+    }
+
+    .me {
+      background: #3b82f6;
+      align-self: flex-end;
+    }
+
+    .other {
+      background: #1e293b;
+      align-self: flex-start;
+    }
+
+    .meta {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 3px;
+    }
+
+    form {
+      display: flex;
+      padding: 10px;
+      background: #020617;
+    }
+
+    #input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #334155;
+      color: white;
+    }
+
+    button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #22c55e;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #16a34a;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- USERS -->
+  <div id="users">
+    <h3>🟢 Online Users</h3>
+    <ul id="userList"></ul>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat">
+    <h2>💬 Real-Time Chat</h2>
+    <div id="messages"></div>
+
+    <form id="form">
+      <input id="input" placeholder="Type message..." />
+      <button>Send</button>
+    </form>
+  </div>
+
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+  <script>
+    const socket = io();
+
+    let username = prompt("Enter your name:");
+    socket.emit("join", username);
+
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const messages = document.getElementById("messages");
+    const userList = document.getElementById("userList");
+
+    // Send message
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      if (input.value) {
+        socket.emit("chat message", input.value);
+        input.value = "";
+      }
+    });
+
+    // Receive message
+    socket.on("chat message", function(data) {
+      const item = document.createElement("div");
+
+      item.classList.add("message");
+      item.classList.add(data.user === username ? "me" : "other");
+
+      item.innerHTML = `
+        <div><strong>${data.user}</strong>: ${data.text}</div>
+        <div class="meta">${data.time}</div>
+      `;
+
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    // Update user list
+    socket.on("user list", function(users) {
+      userList.innerHTML = "";
+      users.forEach(u => {
+        const li = document.createElement("li");
+        li.textContent = u;
+        userList.appendChild(li);
+      });
+    });
+  </script>
+
+</body>
+</html>

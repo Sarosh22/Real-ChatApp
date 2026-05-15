@@ -39,4 +39,4 @@ Supports multiple server instances using Redis adapter.
 (Add screenshots here)
 
 ## 👨‍💻 Author
-Your Name
+Sarosh Waqar
